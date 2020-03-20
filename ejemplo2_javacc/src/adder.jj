@@ -1,0 +1,61 @@
+options {
+	STATIC = false ;
+}
+
+PARSER_BEGIN(Adder)
+	public class Adder {
+                 
+	}
+PARSER_END(Adder)
+
+SKIP  : { " " | "\n" | "\r" | "\r\n" }
+TOKEN : { < PLUS : "+" > | < MIN : "-" > | < MUL : "*" > | < DIV : "/" >}
+TOKEN : { < INT : "int" > | < STRING : "String" > }
+TOKEN : { < OPEN_PAR : "(" > }
+TOKEN : { < CLOSE_PAR : ")" > }
+TOKEN : { < IGUAL : "=" > }
+TOKEN : { < PUNTOCOMA : ";" > | < COMA : "," >}
+TOKEN : { < NUMBER : (["0"-"9"])+ > }
+TOKEN : { <IDENTIFIER: <LETTER>(<LETTER>|<NUMBER>)*> | <LETTER: (["a"-"z","A"-"Z"])>|<CADENA: ("\"")<IDENTIFIER>("\"")>}
+
+void Start(): {} { 
+	definir()           
+}
+
+void definir():{}{
+        try {(
+            definirInt()
+            | definirString()
+        )}catch (ParseException e) {
+            error_skipto(PUNTOCOMA); definir(); 
+        }
+}
+
+void definirInt():{}{
+    <INT> <IDENTIFIER> <IGUAL> Expression() <PUNTOCOMA> {System.out.println("int Leido");} definirP()
+}
+
+void definirString():{}{
+    <STRING> <IDENTIFIER> <IGUAL> <CADENA> <PUNTOCOMA>  {System.out.println("String Leido");} definirP()
+}
+
+void definirP():{} { 
+    definir()
+    |<EOF>
+}
+
+void Expression(): {} { 
+	<NUMBER> 
+        | <IDENTIFIER>
+}
+
+JAVACODE
+void error_skipto(int kind) {
+                ParseException e = generateParseException(); // se genera el objeto excepción
+                System.out.println(e.toString()); // se imprime el mensaje de error
+                Token t;
+                do {
+                    t = getNextToken();
+                } while (t.kind != kind);
+                System.out.println("Se recupera en "+ t.image);
+}
